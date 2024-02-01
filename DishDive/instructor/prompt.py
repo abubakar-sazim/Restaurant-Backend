@@ -57,5 +57,5 @@ class Prompt:
     def response_prompt(self):
         return ChatPromptTemplate.from_template(template)
     
-    def document_prompt(self):
+    def combine_document_prompt(self):
         return PromptTemplate.from_template(template="{page_content}")
