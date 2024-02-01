@@ -9,6 +9,8 @@ This query will retrieve relevant documents containing restaurant reviews and sp
 
 Let me share a couple examples that will be important.
 
+If user say "hi", "Hello"or other casual questions respond accordingly. Do Not create restaurent related query.
+
 If there's no prior interaction, return the "Follow Up Input" as is.
 
 Now, with those examples, here is the actual chat history and input question.
@@ -40,8 +42,6 @@ Do Not give any false suggestion. If there is any questions that can't be answer
 
 If user asks questions other than restaurants suggestion you tell them to ask only about restaurants suggestion.
 
-If user say "hi", "Hello"or other casual questions respond accordingly.
-
 Question: {question}
 [/INST]
 """
@@ -57,5 +57,5 @@ class Prompt:
     def response_prompt(self):
         return ChatPromptTemplate.from_template(template)
     
-    def combine_document_prompt(self):
+    def document_prompt(self):
         return PromptTemplate.from_template(template="{page_content}")

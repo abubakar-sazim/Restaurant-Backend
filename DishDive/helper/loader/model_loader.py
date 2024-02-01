@@ -6,10 +6,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 hf_auth = os.getenv("HF_AUTH")
+model = os.getenv("MODEL")
 
 
 class LoadModel:
-    def __init__(self, model_id="mistralai/Mistral-7B-Instruct-v0.2"):
+    def __init__(self, model_id= model):
         self.model_id = model_id
 
     def load(self):
@@ -35,3 +36,4 @@ class LoadModel:
         )
         model.eval()
         print(f"Model loaded on {device}")
+        return model

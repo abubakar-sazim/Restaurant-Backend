@@ -3,6 +3,16 @@ from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain.memory import ConversationBufferMemory
 from operator import itemgetter
 from DishDive.instructor.prompt import Prompt
+from langchain.schema import format_document
+
+prompt = Prompt()
+
+
+def _combine_documents(
+    docs, document_prompt=prompt.document_prompt(), document_separator="\n\n"
+):
+    doc_strings = [format_document(doc, document_prompt) for doc in docs]
+    return document_separator.join(doc_strings)
 
 
 class LLMChain:
@@ -45,7 +55,7 @@ class LLMChain:
         }
 
         final_inputs = {
-            "context": lambda x: Prompt.combine_document_prompt(x["docs"]),
+            "context": lambda x: _combine_documents(x["docs"]),
             "question": itemgetter("question"),
         }
 
@@ -55,4 +65,6 @@ class LLMChain:
             "context": final_inputs["context"],
         }
 
-        return loaded_memory | standalone_question | retrieved_documents | answer
+        final_chain = loaded_memory | standalone_question | retrieved_documents | answer
+
+        return memory, final_chain
