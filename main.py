@@ -1,6 +1,7 @@
 from typing import Union
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from DishDive.helper.loader.db_loader import LoadDB
 from DishDive.helper.loader.model_loader import LoadModel
 from DishDive.model.processor import Tokenizer
@@ -13,6 +14,14 @@ import re
 app = FastAPI()
 prompts = Prompt()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 db_loader = LoadDB("./chroma_db")
 vectorstore = db_loader.load()
@@ -23,7 +32,10 @@ model = model_loader.load()
 tokenizer = Tokenizer()
 tokenizer = tokenizer.get_tokenizer()
 
-retriever = vectorstore.as_retriever(k=3)
+retriever = vectorstore.as_retriever(
+    search_type="similarity_score_threshold",
+    search_kwargs={"score_threshold": 0.5, "k": 3},
+)
 generator = Generator(model, tokenizer)
 standalone_query_generation_llm = generator.standalone_query()
 response_generation_llm = generator.response()
