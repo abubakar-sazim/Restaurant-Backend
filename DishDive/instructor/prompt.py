@@ -7,6 +7,9 @@ _template = """
 Given the user's request for restaurant suggestions based on reviews, create a standalone question.
 This query will retrieve relevant documents containing restaurant reviews and specific attributes.
 
+The question should be one line question.
+Don't use "based on the context" in the question and no additional text. 
+
 Let me share a couple examples that will be important.
 
 If there's no prior interaction, return the "Follow Up Input" as is.
@@ -35,7 +38,7 @@ Do Not give any suggestion out of the context.
 Format the answer like this:
 Name of the restaurant:
 Address:
-Reason:.
+Reason:
 
 Question: {question}
 [/INST]

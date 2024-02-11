@@ -13,7 +13,6 @@ class Generator:
             tokenizer=self.tokenizer,
             task="text-generation",
             do_sample = False,
-            # temperature=0.1,
             repetition_penalty=1.1,
             return_full_text=True,
             max_new_tokens=1000,

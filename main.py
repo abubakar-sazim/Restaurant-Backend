@@ -34,7 +34,7 @@ tokenizer = tokenizer.get_tokenizer()
 
 retriever = vectorstore.as_retriever(
     search_type="similarity_score_threshold",
-    search_kwargs={"score_threshold": 0.5, "k": 3},
+    search_kwargs={"score_threshold": 0.35, "k": 3},
 )
 generator = Generator(model, tokenizer)
 standalone_query_generation_llm = generator.standalone_query()
@@ -83,7 +83,7 @@ def process_response(entries):
 
 @app.get("/")
 async def read_root():
-    return {"Hello": "Foodies"}
+    return {"success": "The server is up and listening to your requests"}
 
 
 @app.get("/chat")
