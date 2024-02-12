@@ -124,9 +124,9 @@ sympy==1.12
 tenacity==8.2.3
 threadpoolctl==3.2.0
 tokenizers==0.15.1
-# torch==2.1.2+cu118
-# torchaudio==2.2.0+cu118
-# torchvision==0.16.2+cu118
+torch==2.1.2+cu118
+torchaudio==2.2.0+cu118
+torchvision==0.16.2+cu118
 tornado==6.4
 tqdm==4.66.1
 traitlets==5.14.1
