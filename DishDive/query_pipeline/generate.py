@@ -12,7 +12,7 @@ class Generator:
             model=self.model,
             tokenizer=self.tokenizer,
             task="text-generation",
-            temperature=0.1,
+            do_sample = False,
             repetition_penalty=1.1,
             return_full_text=True,
             max_new_tokens=1000,

@@ -13,6 +13,7 @@ class Tokenizer:
         self.model_id = model_id
 
     def get_tokenizer(self):
+        transformers.set_seed(42)
         return transformers.AutoTokenizer.from_pretrained(
             self.model_id, use_auth_token=hf_auth
         )
