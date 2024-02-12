@@ -1,4 +1,3 @@
-from typing import Union
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,9 +9,15 @@ from DishDive.instructor.prompt import Prompt
 from DishDive.conversation.chain import LLMChain
 from DishDive.conversation.chat import Chat
 import re
+from pydantic import BaseModel
 
 app = FastAPI()
 prompts = Prompt()
+
+
+class Question(BaseModel):
+    question: str
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -86,10 +91,10 @@ async def read_root():
     return {"success": "The server is up and listening to your requests"}
 
 
-@app.get("/chat")
-async def inference(question: str):
+@app.post("/chat")
+async def inference(question: Question):
     try:
-        chatbot = Chat(question, final_chain, memory)
+        chatbot = Chat(question.question, final_chain, memory)
         response = chatbot.ask_LLM()
 
         entries = re.split(r"\n(?=business_id:)", response["context"].strip())
