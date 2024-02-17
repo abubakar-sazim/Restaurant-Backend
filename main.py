@@ -15,8 +15,9 @@ app = FastAPI()
 prompts = Prompt()
 
 
-class Question(BaseModel):
+class QuestionWithConversationHistory(BaseModel):
     question: str
+    history: str
 
 
 app.add_middleware(
@@ -56,7 +57,6 @@ llm_chain = LLMChain(
     standalone_query_generation_llm,
     response_generation_llm,
 )
-memory, final_chain = llm_chain.get_chain()
 
 
 def process_response(entries):
@@ -92,9 +92,10 @@ async def read_root():
 
 
 @app.post("/chat")
-async def inference(question: Question):
+async def inference(quesandhistory: QuestionWithConversationHistory):
     try:
-        chatbot = Chat(question.question, final_chain, memory)
+        memory, final_chain = llm_chain.get_chain(quesandhistory.history)
+        chatbot = Chat(quesandhistory.question, final_chain, memory)
         response = chatbot.ask_LLM()
 
         entries = re.split(r"\n(?=business_id:)", response["context"].strip())

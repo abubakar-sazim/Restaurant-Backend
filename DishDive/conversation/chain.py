@@ -30,7 +30,7 @@ class LLMChain:
         self.standalone_query_generation_llm = standalone_query_generation_llm
         self.response_generation_llm = response_generation_llm
 
-    def get_chain(self):
+    def get_chain(self, context):
         memory = ConversationBufferMemory(
             return_messages=True, output_key="answer", input_key="question"
         )
@@ -43,7 +43,7 @@ class LLMChain:
         standalone_question = {
             "standalone_question": {
                 "question": lambda x: x["question"],
-                "chat_history": lambda x: get_buffer_string(x["chat_history"]),
+                "chat_history": lambda x: context,
             }
             | self.CONDENSE_QUESTION_PROMPT
             | self.standalone_query_generation_llm,
