@@ -10,6 +10,9 @@ from DishDive.conversation.chain import LLMChain
 from DishDive.conversation.chat import Chat
 import re
 from pydantic import BaseModel
+import pandas as pd
+
+df = pd.read_csv("./data/filtered.csv")
 
 app = FastAPI()
 prompts = Prompt()
@@ -86,6 +89,26 @@ def process_response(entries):
     return context
 
 
+def get_ids(entries):
+    ids = []
+
+    for entry in entries:
+        entry = entry.split("\n")
+        info = entry[0]
+        info = info.split(":")
+        ids.append(info[-1].strip())
+    return ids
+
+
+def get_reviews(ids, df):
+    reviews_dict = {}
+
+    for id in ids:
+        filtered_df = df[df["business_id"] == id]
+        reviews_dict[id] = list(filtered_df.text)
+    return reviews_dict
+
+
 @app.get("/")
 async def read_root():
     return {"success": "The server is up and listening to your requests"}
@@ -99,11 +122,14 @@ async def inference(quesandhistory: QuestionWithConversationHistory):
         response = chatbot.ask_LLM()
 
         entries = re.split(r"\n(?=business_id:)", response["context"].strip())
+        ids = get_ids(entries)
+        reviews = get_reviews(ids, df)
 
         result = {
             "question": response["question"],
             "answer": response["answer"],
             "context": process_response(entries),
+            "reviews": reviews,
         }
 
         return JSONResponse(content=result)
