@@ -1,6 +1,13 @@
+import os
+import re
+import pandas as pd
+from collections import defaultdict
+from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from langchain.retrievers import ContextualCompressionRetriever
+from langchain.retrievers.document_compressors import CohereRerank
 from DishDive.helper.loader.db_loader import LoadDB
 from DishDive.helper.loader.model_loader import LoadModel
 from DishDive.model.processor import Tokenizer
@@ -8,9 +15,10 @@ from DishDive.query_pipeline.generate import Generator
 from DishDive.instructor.prompt import Prompt
 from DishDive.conversation.chain import LLMChain
 from DishDive.conversation.chat import Chat
-import re
-from pydantic import BaseModel
-import pandas as pd
+from dotenv import load_dotenv
+
+load_dotenv()
+os.environ["COHERE_API_KEY"] = os.getenv("COHERE_API_KEY")
 
 df = pd.read_csv("./data/filtered.csv")
 
@@ -43,8 +51,15 @@ tokenizer = tokenizer.get_tokenizer()
 
 retriever = vectorstore.as_retriever(
     search_type="similarity_score_threshold",
-    search_kwargs={"score_threshold": 0.35, "k": 3},
+    search_kwargs={"score_threshold": 0.1, "k": 20},
 )
+
+compressor = CohereRerank(top_n=20)
+compression_retriever = ContextualCompressionRetriever(
+    base_compressor=compressor, base_retriever=retriever
+)
+
+
 generator = Generator(model, tokenizer)
 standalone_query_generation_llm = generator.standalone_query()
 response_generation_llm = generator.response()
@@ -56,7 +71,7 @@ DEFAULT_DOCUMENT_PROMPT = prompts.document_prompt()
 llm_chain = LLMChain(
     CONDENSE_QUESTION_PROMPT,
     ANSWER_PROMPT,
-    retriever,
+    compression_retriever,
     standalone_query_generation_llm,
     response_generation_llm,
 )
@@ -108,6 +123,22 @@ def get_reviews(ids, df):
         reviews_dict[id] = list(filtered_df.text)
     return reviews_dict
 
+def top_suggestions(docs):
+    restaurants = defaultdict(list)
+    for doc in docs:
+        lines = doc.split('\n')
+        name = [line.split(': ')[1] for line in lines if line.startswith('name: ')]
+        if name:
+            name = name[0]
+            restaurants[name].append(doc)
+
+    filtered_restaurants = []
+    for name, docs in restaurants.items():
+        highest_rating = max(docs, key=lambda x: float(x.split('\nstars: ')[1].split('\n')[0]))
+        filtered_restaurants.append(highest_rating)
+
+    return sorted(filtered_restaurants, key=lambda x: float(x.split('\nstars: ')[1].split('\n')[0]), reverse=True)[:3]
+
 
 @app.get("/")
 async def read_root():
@@ -122,13 +153,15 @@ async def inference(quesandhistory: QuestionWithConversationHistory):
         response = chatbot.ask_LLM()
 
         entries = re.split(r"\n(?=business_id:)", response["context"].strip())
-        ids = get_ids(entries)
+        top_restaurants = top_suggestions(entries)
+        
+        ids = get_ids(top_restaurants)
         reviews = get_reviews(ids, df)
 
         result = {
             "question": response["question"],
             "answer": response["answer"],
-            "context": process_response(entries),
+            "context": process_response(top_restaurants),
             "reviews": reviews,
         }
 
