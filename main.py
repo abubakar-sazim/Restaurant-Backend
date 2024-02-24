@@ -119,7 +119,7 @@ def get_reviews(ids, df):
     reviews_dict = {}
 
     for id in ids:
-        filtered_df = df[df["business_id"] == id]
+        filtered_df = df[(df["business_id"] == id) & (df["stars"] > 4)]
         reviews_dict[id] = list(filtered_df.text)
     return reviews_dict
 

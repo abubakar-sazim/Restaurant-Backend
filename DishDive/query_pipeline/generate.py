@@ -24,6 +24,7 @@ class Generator:
             model=self.model,
             tokenizer=self.tokenizer,
             task="text-generation",
+            do_sample = True,
             temperature=0.25,
             repetition_penalty=1.1,
             return_full_text=True,
