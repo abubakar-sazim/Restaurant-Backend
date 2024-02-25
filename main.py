@@ -51,7 +51,7 @@ tokenizer = tokenizer.get_tokenizer()
 
 retriever = vectorstore.as_retriever(
     search_type="similarity_score_threshold",
-    search_kwargs={"score_threshold": 0.1, "k": 20},
+    search_kwargs={"score_threshold": 0.2, "k": 20},
 )
 
 compressor = CohereRerank(top_n=20)

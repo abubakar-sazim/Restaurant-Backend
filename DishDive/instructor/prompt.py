@@ -7,6 +7,12 @@ _template = """
 Given the user's request for restaurant suggestions based on reviews, create a standalone question.
 This query will retrieve relevant documents containing restaurant reviews and specific attributes.
 
+The database has attributes like location, Alcohol(if the restauant has alcohol or not),
+wifi(has free wifi or not), Accepts Credit Cards(rue/false),  Good for Kids(yes/no),
+Has TV(true/false), Noise Level, Outdoor Seating(true/false), Parking(true/false), 
+Delivery (true/false), Good for Groups (true/false).
+The standalone question must be generated using these features whenever needed.
+
 The question should be one line question.
 Don't use "based on the context" in the question and no additional text. 
 
@@ -54,6 +60,6 @@ class Prompt:
 
     def response_prompt(self):
         return ChatPromptTemplate.from_template(template)
-    
+
     def document_prompt(self):
         return PromptTemplate.from_template(template="{page_content}")
