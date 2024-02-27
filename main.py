@@ -51,7 +51,7 @@ tokenizer = tokenizer.get_tokenizer()
 
 retriever = vectorstore.as_retriever(
     search_type="similarity_score_threshold",
-    search_kwargs={"score_threshold": 0.2, "k": 20},
+    search_kwargs={"score_threshold": 0.50, "k": 20},
 )
 
 compressor = CohereRerank(top_n=20)
@@ -143,6 +143,26 @@ def top_suggestions(docs):
 @app.get("/")
 async def read_root():
     return {"success": "The server is up and listening to your requests"}
+
+@app.get("/restaurant/{business_id}")
+async def get_restaurant_info(business_id: str):
+    business_info = df[df['business_id'] == business_id].iloc[0].to_dict()
+    return business_info
+
+@app.get("/restaurant/{business_id}/reviews")
+async def get_restaurant_reviews(business_id: str):
+    filtered_df = df[(df["business_id"] == business_id) & (df["stars"] > 3.5)]
+    reviews = list(filtered_df.text)
+    return reviews
+
+@app.get("/restaurant/{business_id}/reviews/count")
+async def get_restaurant_reviews_count(business_id: str):
+    filtered_df = df[(df["business_id"] == business_id)]
+    avg_stars = sum(filtered_df.stars)/len(filtered_df)
+    return {
+        'number_of_reviews': len(filtered_df),
+        'avg_stars' : avg_stars
+    }
 
 
 @app.post("/chat")

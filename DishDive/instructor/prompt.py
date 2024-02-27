@@ -7,6 +7,8 @@ _template = """
 Given the user's request for restaurant suggestions based on reviews, create a standalone question.
 This query will retrieve relevant documents containing restaurant reviews and specific attributes.
 
+The user can also ask for bad restaurants based on reviews to avoid. 
+
 The database has attributes like location, Alcohol(if the restauant has alcohol or not),
 wifi(has free wifi or not), Accepts Credit Cards(rue/false),  Good for Kids(yes/no),
 Has TV(true/false), Noise Level, Outdoor Seating(true/false), Parking(true/false), 
