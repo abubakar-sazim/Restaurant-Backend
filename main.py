@@ -51,10 +51,10 @@ tokenizer = tokenizer.get_tokenizer()
 
 retriever = vectorstore.as_retriever(
     search_type="similarity_score_threshold",
-    search_kwargs={"score_threshold": 0.50, "k": 20},
+    search_kwargs={"score_threshold": 0.40, "k": 20},
 )
 
-compressor = CohereRerank(top_n=20)
+compressor = CohereRerank(top_n=20, model="rerank-english-v2.0")
 compression_retriever = ContextualCompressionRetriever(
     base_compressor=compressor, base_retriever=retriever
 )
@@ -123,46 +123,53 @@ def get_reviews(ids, df):
         reviews_dict[id] = list(filtered_df.text)
     return reviews_dict
 
+
 def top_suggestions(docs):
     restaurants = defaultdict(list)
     for doc in docs:
-        lines = doc.split('\n')
-        name = [line.split(': ')[1] for line in lines if line.startswith('name: ')]
+        lines = doc.split("\n")
+        name = [line.split(": ")[1] for line in lines if line.startswith("name: ")]
         if name:
             name = name[0]
             restaurants[name].append(doc)
 
     filtered_restaurants = []
     for name, docs in restaurants.items():
-        highest_rating = max(docs, key=lambda x: float(x.split('\nstars: ')[1].split('\n')[0]))
+        highest_rating = max(
+            docs, key=lambda x: float(x.split("\nstars: ")[1].split("\n")[0])
+        )
         filtered_restaurants.append(highest_rating)
 
-    return sorted(filtered_restaurants, key=lambda x: float(x.split('\nstars: ')[1].split('\n')[0]), reverse=True)[:3]
+    return sorted(
+        filtered_restaurants,
+        key=lambda x: float(x.split("\nstars: ")[1].split("\n")[0]),
+        reverse=True,
+    )[:3]
 
 
 @app.get("/")
 async def read_root():
     return {"success": "The server is up and listening to your requests"}
 
+
 @app.get("/restaurant/{business_id}")
 async def get_restaurant_info(business_id: str):
-    business_info = df[df['business_id'] == business_id].iloc[0].to_dict()
+    business_info = df[df["business_id"] == business_id].iloc[0].to_dict()
     return business_info
+
 
 @app.get("/restaurant/{business_id}/reviews")
 async def get_restaurant_reviews(business_id: str):
-    filtered_df = df[(df["business_id"] == business_id) & (df["stars"] > 3.5)]
+    filtered_df = df[(df["business_id"] == business_id) & (df["stars"] > 3)]
     reviews = list(filtered_df.text)
     return reviews
+
 
 @app.get("/restaurant/{business_id}/reviews/count")
 async def get_restaurant_reviews_count(business_id: str):
     filtered_df = df[(df["business_id"] == business_id)]
-    avg_stars = sum(filtered_df.stars)/len(filtered_df)
-    return {
-        'number_of_reviews': len(filtered_df),
-        'avg_stars' : avg_stars
-    }
+    avg_stars = sum(filtered_df.stars) / len(filtered_df)
+    return {"number_of_reviews": len(filtered_df), "avg_stars": avg_stars}
 
 
 @app.post("/chat")
@@ -174,7 +181,7 @@ async def inference(quesandhistory: QuestionWithConversationHistory):
 
         entries = re.split(r"\n(?=business_id:)", response["context"].strip())
         top_restaurants = top_suggestions(entries)
-        
+
         ids = get_ids(top_restaurants)
         reviews = get_reviews(ids, df)
 

@@ -9,12 +9,6 @@ This query will retrieve relevant documents containing restaurant reviews and sp
 
 The user can also ask for bad restaurants based on reviews to avoid. 
 
-The database has attributes like location, Alcohol(if the restauant has alcohol or not),
-wifi(has free wifi or not), Accepts Credit Cards(rue/false),  Good for Kids(yes/no),
-Has TV(true/false), Noise Level, Outdoor Seating(true/false), Parking(true/false), 
-Delivery (true/false), Good for Groups (true/false).
-The standalone question must be generated using these features whenever needed.
-
 The question should be one line question.
 Don't use "based on the context" in the question and no additional text. 
 
@@ -43,10 +37,12 @@ Provide an answer based solely on the provided context:
 If there is no documents in the context then say "Sorry I don't have enough information to suggest you a restaurants."
 Do Not give any suggestion out of the context.
 
+Give only one restaurant that comes first in the context as the suggestion.
+
 Format the answer like this:
 Name of the restaurant:
-Address:
-Reason:
+\nAddress:
+\nReason:
 
 Question: {question}
 [/INST]
